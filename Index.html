@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MCQ Extractor</title>
+</head>
+<body>
+    <h1>MCQ Extractor</h1>
+    <textarea id="mcqInput" rows="10" cols="100" placeholder="Paste your MCQ text here..."></textarea>
+    <br>
+    <button onclick="extractMCQs()">Extract MCQs</button>
+    <div id="output"></div>
+
+    <script>
+        function extractMCQs() {
+            const text = document.getElementById('mcqInput').value;
+            const chunks = text.split(/(Q\d+)/);
+            const mcqList = [];
+
+            for (let i = 1; i < chunks.length; i += 2) {
+                const question = chunks[i] + chunks[i + 1];
+                const qMatch = question.match(/(Q\d+.*?)(A\..*?)\s*(B\..*?)\s*(C\..*?)\s*(D\..*?)\s*(E\..*?)?/s);
+                
+                if (qMatch) {
+                    const questionText = qMatch[1].trim();
+                    const options = [];
+                    for (let j = 2; j <= 6; j++) {
+                        if (qMatch[j]) {
+                            options.push(qMatch[j].trim());
+                        }
+                    }
+
+                    let correctAnswer = null;
+                    for (const option of options) {
+                        if (option.toLowerCase().includes('green')) {
+                            correctAnswer = option.replace(/green/i, '').trim();
+                            break;
+                        }
+                    }
+
+                    mcqList.push({
+                        question: questionText,
+                        options: options,
+                        correctAnswer: correctAnswer
+                    });
+                }
+            }
+
+            displayMCQs(mcqList);
+        }
+
+        function displayMCQs(mcqList) {
+            const outputDiv = document.getElementById('output');
+            outputDiv.innerHTML = ''; // Clear previous output
+
+            mcqList.forEach((mcq, index) => {
+                const questionElem = document.createElement('div');
+                questionElem.innerHTML = `<h3>Question ${index + 1}: ${mcq.question}</h3>`;
+                
+                const optionsList = document.createElement('ul');
+                mcq.options.forEach(option => {
+                    const optionItem = document.createElement('li');
+                    optionItem.textContent = option;
+                    optionsList.appendChild(optionItem);
+                });
+                
+                const correctAnswerElem = document.createElement('p');
+                correctAnswerElem.innerHTML = `<strong>Correct Answer:</strong> ${mcq.correctAnswer}`;
+
+                outputDiv.appendChild(questionElem);
+                outputDiv.appendChild(optionsList);
+                outputDiv.appendChild(correctAnswerElem);
+            });
+        }
+    </script>
+</body>
+</html>
